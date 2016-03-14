@@ -12,6 +12,8 @@ import android.widget.TextView;
 import com.squareup.picasso.Picasso;
 import com.yaseen.popularmovies.Models.MovieItem;
 
+import butterknife.ButterKnife;
+
 /**
  * A placeholder fragment containing a simple view.
  */
@@ -47,6 +49,12 @@ public class MovieDetailActivityFragment extends Fragment {
         }
 
         return rootview;
+    }
+
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ButterKnife.unbind(this);
     }
 
 

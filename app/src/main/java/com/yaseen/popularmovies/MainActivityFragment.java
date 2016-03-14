@@ -38,12 +38,22 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 
+import butterknife.Bind;
+import butterknife.ButterKnife;
+
 /**
  * A placeholder fragment containing a simple view.
  */
 public class MainActivityFragment extends Fragment {
 
     private final String TAG = MainActivityFragment.class.getName();
+
+    @Bind(R.id.movies_grid)
+    GridView moviesGridview;
+    @Bind(R.id.progressBar)
+    ProgressBar progressBar;
+    @Bind(R.id.error_button)
+    Button errorButton;
     private final String POSTER_BASE_URL = "http://image.tmdb.org/t/p/";
     private final String POSTER_SIZE = "w185/";
     private final String BACKDROP_SIZE = "w342/";
@@ -52,13 +62,9 @@ public class MainActivityFragment extends Fragment {
     public final String MOVIE_SORT_PREF = "sort_pref";
     public final String SORT_BY_POPULARITY = "popularity.desc";
     public final String SORT_BY_RATINGS = "vote_average.desc";
-    //sort_by=vote_average.desc&api_key=aa0359d9b234e81518b7ccab7d87ae31&page=1
     private IntentFilter actionIntentFilter = null;
     private List<MovieItem> mMoviesList;
     private MoviesAdapter mAdapter;
-    private GridView moviesGridview;
-    Button errorButton;
-    private ProgressBar progressBar;
 
     public MainActivityFragment() {
 
@@ -68,13 +74,14 @@ public class MainActivityFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View rootview = inflater.inflate(R.layout.fragment_main, container, false);
+        ButterKnife.bind(this, rootview);
 
         actionIntentFilter = new IntentFilter();
         actionIntentFilter.addAction(RestApi.ACTION_FETCH_MOVIES);
         mMoviesList = new ArrayList<>();
-        moviesGridview = (GridView) rootview.findViewById(R.id.movies_grid);
-        progressBar = (ProgressBar) rootview.findViewById(R.id.progressBar);
-        errorButton = (Button) rootview.findViewById(R.id.error_button);
+//        moviesGridview = (GridView) rootview.findViewById(R.id.movies_grid);
+//        progressBar = (ProgressBar) rootview.findViewById(R.id.progressBar);
+//        errorButton = (Button) rootview.findViewById(R.id.error_button);
 
         if (savedInstanceState != null && savedInstanceState.containsKey("movie_list")) {
             mMoviesList = savedInstanceState.getParcelableArrayList("movie_list");
@@ -237,4 +244,9 @@ public class MainActivityFragment extends Fragment {
         LocalBroadcastManager.getInstance(getActivity()).unregisterReceiver(mFetchMoviesReceiver);
     }
 
+    @Override
+    public void onDestroyView() {
+        super.onDestroyView();
+        ButterKnife.unbind(this);
+    }
 }

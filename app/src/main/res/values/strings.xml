@@ -1,6 +1,6 @@
 <resources>
 
-    <string name="moviedb_apikey">YOUR_API_KEY</string>
+    <string name="moviedb_apikey">aa0359d9b234e81518b7ccab7d87ae31</string>
 
     <string name="app_name">Popular Movies</string>
     <string name="action_settings">Settings</string>

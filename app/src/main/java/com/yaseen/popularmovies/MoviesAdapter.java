@@ -51,6 +51,7 @@ public class MoviesAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
+//        @Bind(R.id.image_view) ImageView imageView;
         ImageView imageView;
         View rootView;
         rootView = layoutInflater.inflate(R.layout.grid_movie_item_layout, null);
