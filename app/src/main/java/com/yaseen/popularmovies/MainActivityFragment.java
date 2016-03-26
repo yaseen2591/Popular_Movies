@@ -25,6 +25,7 @@ import android.widget.GridView;
 import android.widget.ProgressBar;
 
 import com.yaseen.popularmovies.Models.MovieItem;
+import com.yaseen.popularmovies.Util.Utility;
 import com.yaseen.popularmovies.rest.RestApi;
 import com.yaseen.popularmovies.rest.RestService;
 
@@ -32,7 +33,6 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
-import java.io.Serializable;
 import java.net.HttpURLConnection;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -58,10 +58,6 @@ public class MainActivityFragment extends Fragment {
     private final String POSTER_SIZE = "w185/";
     private final String BACKDROP_SIZE = "w342/";
 
-    public final String MOVIE_PREFERENCE = "movie_pref";
-    public final String MOVIE_SORT_PREF = "sort_pref";
-    public final String SORT_BY_POPULARITY = "popularity.desc";
-    public final String SORT_BY_RATINGS = "vote_average.desc";
     private IntentFilter actionIntentFilter = null;
     private List<MovieItem> mMoviesList;
     private MoviesAdapter mAdapter;
@@ -79,9 +75,6 @@ public class MainActivityFragment extends Fragment {
         actionIntentFilter = new IntentFilter();
         actionIntentFilter.addAction(RestApi.ACTION_FETCH_MOVIES);
         mMoviesList = new ArrayList<>();
-//        moviesGridview = (GridView) rootview.findViewById(R.id.movies_grid);
-//        progressBar = (ProgressBar) rootview.findViewById(R.id.progressBar);
-//        errorButton = (Button) rootview.findViewById(R.id.error_button);
 
         if (savedInstanceState != null && savedInstanceState.containsKey("movie_list")) {
             mMoviesList = savedInstanceState.getParcelableArrayList("movie_list");
@@ -109,6 +102,7 @@ public class MainActivityFragment extends Fragment {
             }
         });
 
+
         return rootview;
     }
 
@@ -125,19 +119,53 @@ public class MainActivityFragment extends Fragment {
         int id = item.getItemId();
 
         if (id == R.id.action_sort_movies) {
-            String[] sortList = {"Sort by Popularity", "Sort by Ratings"};
-            int selected_index = getSortByFromPreference().equals(SORT_BY_POPULARITY) ? 0 : 1;
+            final String[] sortList = {"Most Popular", "Top Rated","Favorites"};
+            final int selected_index;
+            switch(getSortByFromPreference()){
+                case Utility.SORT_BY_POPULARITY:
+                    selected_index=0;
+                    break;
+                case Utility.SORT_BY_RATINGS:
+                    selected_index=1;
+                    break;
+                case Utility.SORT_BY_FAVORITES:
+                    selected_index=2;
+                    break;
+                default:
+                    selected_index=0;
+                    break;
+            }
+//           selected_index = getSortByFromPreference().equals(Utility.SORT_BY_POPULARITY) ? 0 : 1;
             final AlertDialog.Builder builder = new AlertDialog.Builder(getActivity());
             builder.setTitle(getResources().getString(R.string.sort_alert_title))
                     .setSingleChoiceItems(sortList, selected_index, new DialogInterface.OnClickListener() {
                         @Override
                         public void onClick(DialogInterface dialog, int index) {
-                            SharedPreferences.Editor editor = getActivity().getSharedPreferences(MOVIE_PREFERENCE, Context.MODE_PRIVATE).edit();
-                            String sort_pref = index > 0 ? SORT_BY_RATINGS : SORT_BY_POPULARITY;
-                            editor.putString(MOVIE_SORT_PREF, sort_pref).apply();
+                            SharedPreferences.Editor editor = getActivity().getSharedPreferences(Utility.MOVIE_PREFERENCE, Context.MODE_PRIVATE).edit();
+                            String sortPref;
+                            boolean fetchmovies=true;
+                            switch (index){
+                                case 0:
+                                    sortPref=Utility.SORT_BY_POPULARITY;
+                                    break;
+                                case 1:
+                                    sortPref=Utility.SORT_BY_RATINGS;
+                                    break;
+                                case 2:
+                                    sortPref=Utility.SORT_BY_FAVORITES;
+                                    fetchmovies=false;
+                                    loadFavorites();
+                                    break;
+                                default:
+                                    sortPref=Utility.SORT_BY_POPULARITY;
+                                    break;
+                            }
+                            editor.putString(Utility.MOVIE_SORT_PREF, sortPref).apply();
                             dialog.dismiss();
-                            mAdapter.clear();
-                            fetchMoviesDetails();
+//                            mAdapter.clear();
+                            if (fetchmovies){
+                                fetchMoviesDetails();
+                            }
                         }
                     });
 
@@ -149,6 +177,10 @@ public class MainActivityFragment extends Fragment {
         return super.onOptionsItemSelected(item);
     }
 
+    private void loadFavorites(){
+
+    }
+
 
     private void fetchMoviesDetails() {
         if (!isNetworkAvailable()) {
@@ -157,12 +189,14 @@ public class MainActivityFragment extends Fragment {
 
         } else {
             progressBar.setVisibility(View.VISIBLE);
-            HashMap<String, String> params = new HashMap<String, String>();
+            HashMap<String, String> params = new HashMap<>();
             params.put(RestApi.PARAM_API_KEY, getString(R.string.moviedb_apikey));
-            params.put(RestApi.PARAM_SORT_BY, getSortByFromPreference());
+            String url= Utility.buildURL(new String[]{getSortByFromPreference()});
             Intent serviceIntent = new Intent(getActivity(), RestService.class);
             serviceIntent.putExtra(RestApi.EXTRA_ACTION, RestApi.ACTION_FETCH_MOVIES);
-            serviceIntent.putExtra(RestApi.EXTRA_PARAMS, (Serializable) params);
+            serviceIntent.putExtra(RestApi.EXTRA_PARAMS, params);
+            serviceIntent.putExtra(RestApi.EXTRA_URL,url);
+
             getActivity().startService(serviceIntent);
         }
     }
@@ -170,8 +204,8 @@ public class MainActivityFragment extends Fragment {
 
     //returns sort type from preference
     private String getSortByFromPreference() {
-        SharedPreferences prefs = getActivity().getSharedPreferences(MOVIE_PREFERENCE, Context.MODE_PRIVATE);
-        String sortPreference = prefs.getString(MOVIE_SORT_PREF, SORT_BY_POPULARITY);
+        SharedPreferences prefs = getActivity().getSharedPreferences(Utility.MOVIE_PREFERENCE, Context.MODE_PRIVATE);
+        String sortPreference = prefs.getString(Utility.MOVIE_SORT_PREF, Utility.SORT_BY_POPULARITY);
 
         return sortPreference;
     }
@@ -192,6 +226,7 @@ public class MainActivityFragment extends Fragment {
                 movieItem.setOverview(movie.getString("overview"));
                 movieItem.setRating(movie.getString("vote_average"));
                 movieItem.setReleaseDate(movie.getString("release_date"));
+                movieItem.setId(movie.getString("id"));
                 movieItem.setBackdropImage(POSTER_BASE_URL + BACKDROP_SIZE + movie.getString("backdrop_path"));
                 mMoviesList.add(movieItem);
             }

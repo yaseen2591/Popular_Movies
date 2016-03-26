@@ -7,6 +7,7 @@ import android.os.Parcelable;
  * Created by Pasonet on 19-02-2016.
  */
 public class MovieItem implements Parcelable {
+    private String id;
     private String title;
     private String rating;
     private String overview;
@@ -25,6 +26,14 @@ public class MovieItem implements Parcelable {
         this.overview = overview;
         this.imageUrl = imageUrl;
 
+    }
+
+    public String getId() {
+        return id;
+    }
+
+    public void setId(String id) {
+        this.id = id;
     }
 
     public String getBackdropImage() {
@@ -77,6 +86,7 @@ public class MovieItem implements Parcelable {
 
 
     private MovieItem(Parcel in) {
+        id=in.readString();
         title = in.readString();
         rating = in.readString();
         overview = in.readString();
@@ -93,6 +103,7 @@ public class MovieItem implements Parcelable {
 
     @Override
     public void writeToParcel(Parcel dest, int flags) {
+        dest.writeString(id);
         dest.writeString(title);
         dest.writeString(rating);
         dest.writeString(overview);

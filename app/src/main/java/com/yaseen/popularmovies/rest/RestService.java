@@ -38,16 +38,21 @@ public class RestService extends IntentService {
             return;
         }
 
-        HashMap params = (HashMap) extras.getSerializable(RestApi.EXTRA_PARAMS);
+        String REST_ACTION=extras.getString(RestApi.EXTRA_ACTION);
+
+        HashMap params = (HashMap) extras.get(RestApi.EXTRA_PARAMS);
+        String requestURL=(String)extras.get(RestApi.EXTRA_URL);
 
         String response = "";
         int statusCode = RestApi.INVALID_ACTION;
 
         try {
-            String urlwithparams = RestApi.BASE_URL + getExtraParams(params);
+            String urlwithparams = requestURL+"?"+ getExtraParams(params);
+
+            Log.d(TAG,urlwithparams);
 
             URL url = new URL(urlwithparams);
-            Log.d(TAG, urlwithparams);
+            Log.d(TAG, requestURL);
 
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setReadTimeout(30000);
@@ -66,7 +71,6 @@ public class RestService extends IntentService {
                 }
                 br.close();
             } else {
-//                response=Integer.toString(responseCode);
                 String line;
                 BufferedReader br = new BufferedReader(new InputStreamReader(conn.getErrorStream()));
                 while ((line = br.readLine()) != null) {
@@ -74,7 +78,7 @@ public class RestService extends IntentService {
                 }
                 br.close();
             }
-            BroadcastResponse(statusCode, response);
+            BroadcastResponse(statusCode, response,REST_ACTION);
         } catch (java.net.SocketTimeoutException e) {
             e.printStackTrace();
         } catch (Exception e) {
@@ -83,9 +87,9 @@ public class RestService extends IntentService {
 
     }
 
-    public void BroadcastResponse(int statusCode, String responseString) {
+    public void BroadcastResponse(int statusCode, String responseString,String extraAction) {
 //        Log.v(TAG, "Sending broadcast for:" + ProcessorFactory.getActionFilter(action));
-        Intent intent = new Intent(RestApi.ACTION_FETCH_MOVIES);
+        Intent intent = new Intent(extraAction);
         intent.putExtra(RestApi.EXTRA_RESPONSE_CODE, statusCode);
         intent.putExtra(RestApi.EXTRA_RESPONSE_DATA, responseString);
 

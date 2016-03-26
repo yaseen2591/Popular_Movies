@@ -7,7 +7,7 @@
     <string name="action_sort_movies">Sort Movies</string>
 
 
-    <string name="sort_alert_title">Sort By</string>
+    <string name="sort_alert_title">Sort movies by</string>
 
     <!-- Errors-->
     <string name="error_no_internet">Please check your internet \n \n <b>RETRY</b></string>
