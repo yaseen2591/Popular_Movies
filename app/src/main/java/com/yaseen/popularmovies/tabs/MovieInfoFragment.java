@@ -59,8 +59,16 @@ public class MovieInfoFragment extends Fragment {
 
         title.setText(movieItem.getTitle());
         rating.setText("Rating : " + movieItem.getRating());
-        release_date.setText("Release : " + movieItem.getReleaseDate());
+        release_date.setText(movieItem.getReleaseDate());
         overview.setText(movieItem.getOverview());
+
+
+//        Picasso.with(getContext()).load(movieItem.getImageUrl())
+//                .error(R.drawable.poster)
+//                .centerCrop()
+//                .centerCrop()
+//                .into(movieThumbView);
+
 
         Glide.with(getContext())
                 .load(movieItem.getImageUrl())
@@ -75,16 +83,18 @@ public class MovieInfoFragment extends Fragment {
         if (movieItem.getBackdropImage()==null)
             movieItem.setBackdropImage("url not found");
 
-        Cursor c = getContext().getContentResolver().query(MovieContract.Movie.CONTENT_URI,
+        Cursor cursor = getContext().getContentResolver().query(MovieContract.Movie.CONTENT_URI,
                 new String[]{MovieContract.Movie.COLUMN_MOVIE_ID},
                 MovieContract.Movie.COLUMN_MOVIE_ID + "= ? ",
                 new String[]{movieItem.getId()},
                 null);
 
-        if (c!=null && c.getCount() > 0) {
+        if (cursor!=null && cursor.getCount() > 0) {
             favoriteButton.setImageResource(R.drawable.favorite);
             isFavoriteMovie=true;
         }
+        cursor.close();;
+
 
 
         favoriteButton.setOnClickListener(new View.OnClickListener() {

@@ -13,6 +13,7 @@
         android:fitsSystemWindows="true"
         app:contentScrim="?attr/colorPrimary"
         app:expandedTitleMarginEnd="@dimen/activity_horizontal_margin"
+        app:expandedTitleTextAppearance="@style/TextAppearance.AppCompat.Title"
         app:expandedTitleMarginStart="@dimen/activity_horizontal_margin"
         app:layout_scrollFlags="scroll|exitUntilCollapsed">
 

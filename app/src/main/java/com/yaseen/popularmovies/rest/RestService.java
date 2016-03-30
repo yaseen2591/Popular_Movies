@@ -88,7 +88,7 @@ public class RestService extends IntentService {
     }
 
     public void BroadcastResponse(int statusCode, String responseString,String extraAction) {
-//        Log.v(TAG, "Sending broadcast for:" + ProcessorFactory.getActionFilter(action));
+        Log.v(TAG, "Sending broadcast for:" +responseString);
         Intent intent = new Intent(extraAction);
         intent.putExtra(RestApi.EXTRA_RESPONSE_CODE, statusCode);
         intent.putExtra(RestApi.EXTRA_RESPONSE_DATA, responseString);

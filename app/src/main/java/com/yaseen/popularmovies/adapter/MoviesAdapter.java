@@ -7,8 +7,7 @@ import android.view.ViewGroup;
 import android.widget.BaseAdapter;
 import android.widget.ImageView;
 
-import com.bumptech.glide.Glide;
-import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.squareup.picasso.Picasso;
 import com.yaseen.popularmovies.Models.MovieItem;
 import com.yaseen.popularmovies.R;
 
@@ -27,6 +26,7 @@ public class MoviesAdapter extends BaseAdapter {
         mContext = context;
         mMoviesList = moviesList;
         layoutInflater = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
+
     }
 
 
@@ -53,22 +53,35 @@ public class MoviesAdapter extends BaseAdapter {
 
     @Override
     public View getView(int position, View convertView, ViewGroup parent) {
-//        @Bind(R.id.image_view) ImageView imageView;
-        ImageView imageView;
-        View rootView;
-        rootView = layoutInflater.inflate(R.layout.grid_movie_item_layout, null);
+        ViewHolderItem viewHolderItem;
         if (convertView == null) {
-            imageView = (ImageView) rootView.findViewById(R.id.image_view);
+            convertView = layoutInflater.inflate(R.layout.grid_movie_item_layout, parent, false);
+            viewHolderItem = new ViewHolderItem();
+            viewHolderItem.posterImageView = (ImageView) convertView.findViewById(R.id.image_view);
+            convertView.setTag(viewHolderItem);
+
         } else {
-            imageView = (ImageView) convertView;
+            viewHolderItem = (ViewHolderItem) convertView.getTag();
         }
         MovieItem movieItem = mMoviesList.get(position);
-        Glide.with(mContext)
-                .load(movieItem.getImageUrl())
+
+        Picasso.with(mContext).load(movieItem.getImageUrl())
                 .error(R.drawable.poster)
-                .centerCrop()
-                .diskCacheStrategy(DiskCacheStrategy.NONE)
-                .into(imageView);
-        return imageView;
+                .into(viewHolderItem.posterImageView);
+
+        //TODO replace Picasso with Glide -find why it is not working with Glide
+
+//        Glide.with(mContext)
+//                .load(movieItem.getImageUrl())
+//                .error(R.drawable.poster)
+//                .diskCacheStrategy(DiskCacheStrategy.ALL)
+//                .into(viewHolderItem.posterImageView);
+
+        return convertView;
     }
+
+    public static class ViewHolderItem {
+        ImageView posterImageView;
+    }
+
 }

@@ -7,9 +7,14 @@ import android.content.IntentFilter;
 import android.os.Bundle;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
+import android.support.v4.view.MenuItemCompat;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
+import android.support.v7.widget.ShareActionProvider;
 import android.view.LayoutInflater;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 
@@ -57,7 +62,9 @@ public class MovieTrailerFragment extends Fragment {
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
                              Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.trailor_info, container, false);
-        ButterKnife.bind(this,view);
+        ButterKnife.bind(this, view);
+        setHasOptionsMenu(true);
+        getActivity().supportInvalidateOptionsMenu();
 
         actionIntentFilter = new IntentFilter();
         actionIntentFilter.addAction(RestApi.ACTION_FETCH_TRAILORS);
@@ -72,10 +79,8 @@ public class MovieTrailerFragment extends Fragment {
             mAdapter = new MovieTrailorsAdapter(getActivity(),mTrailorsList);
             mAdapter.notifyDataSetChanged();
             mRecyclerview.setAdapter(mAdapter);
-        } else {
-            fetchtrailors();
         }
-
+            fetchtrailors();
 
         return view;
     }
@@ -98,6 +103,7 @@ public class MovieTrailerFragment extends Fragment {
                 int responsecode = intent.getIntExtra(RestApi.EXTRA_RESPONSE_CODE, -1);
                 if (responsecode == HttpURLConnection.HTTP_OK) {
                     try {
+                        mTrailorsList= new ArrayList<>();
                         JSONObject responseJSON = new JSONObject(intent.getStringExtra(RestApi.EXTRA_RESPONSE_DATA));
                         JSONArray trailors = responseJSON.getJSONArray("results");
                         for (int i = 0; i < trailors.length(); i++) {
@@ -122,10 +128,29 @@ public class MovieTrailerFragment extends Fragment {
     @Override
     public void onSaveInstanceState(Bundle outState) {
         super.onSaveInstanceState(outState);
-        if (mTrailorsList.size() > 0) {
             outState.putParcelableArrayList(Utility.EXTRA_VIDEO, mTrailorsList);
-        }
     }
+
+    @Override
+    public void onCreateOptionsMenu(Menu menu, MenuInflater inflater) {
+        super.onCreateOptionsMenu(menu, inflater);
+        inflater.inflate(R.menu.menu_share_trailor, menu);
+        MenuItem menuItem = menu.findItem(R.id.action_share_trailor);
+        String url = "No video found";
+
+        ShareActionProvider shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
+        Intent intent = new Intent(Intent.ACTION_SEND);
+        intent.setType("text/plain");
+        if (mTrailorsList!=null){
+            url = Utility.YOUTUBE_PLAYER_URL_BASE + mTrailorsList.get(0).getKey();
+        }
+        intent.putExtra(Intent.EXTRA_TEXT, url);
+        shareActionProvider.setShareIntent(intent);
+        MenuItemCompat.setActionProvider(menuItem, shareActionProvider);
+
+    }
+
+
 
     @Override
     public void onResume() {

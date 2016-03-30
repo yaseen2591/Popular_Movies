@@ -15,7 +15,7 @@ public class RestApi {
     public static final String ACTION_FETCH_TRAILORS="com.yaseen.popularmovies.res.FETCH_TRAILORS";
     public static final String ACTION_FETCH_REVIEWS="com.rest.FETCH_REVIEWS";
 
-    public static final String BASE_URL = "http://api.themoviedb.org/3/discover/movie?";
+    public static final String BASE_URL = "https://api.themoviedb.org/3/discover/movie?";
 
     public static final String PARAM_API_KEY = "api_key";
     public static final String PARAM_SORT_BY = "sort_by";

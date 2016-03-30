@@ -65,9 +65,13 @@ public class MovieDetailActivityFragment extends Fragment {
             twoPane = true;
             toolbar2.setTitle(movieItem.getTitle());
         }
-        if (!twoPane)
-            ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(movieItem.getTitle());
-
+        if (!twoPane) {
+//            toolbar2.setTitle(movieItem.getTitle());
+            if (((AppCompatActivity) getActivity()).getSupportActionBar()!=null) {
+                ((AppCompatActivity) getActivity()).getSupportActionBar().setTitle(movieItem.getTitle());
+            }
+//           toolbar2.setDisplayHomeAsUpEnabled(true);
+        }
         try {
             setViewpager();
         } catch (NullPointerException e) {
@@ -108,6 +112,8 @@ public class MovieDetailActivityFragment extends Fragment {
         if (savedInstanceState != null && savedInstanceState.containsKey(Utility.EXTRA_MOVIE_FRAGMENT)) {
             movieItem = savedInstanceState.getParcelable(Utility.EXTRA_MOVIE_FRAGMENT);
         }
+
+
 
         Glide.with(getContext())
                 .load(movieItem.getBackdropImage())
