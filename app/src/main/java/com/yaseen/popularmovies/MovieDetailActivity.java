@@ -22,13 +22,6 @@ public class MovieDetailActivity extends AppCompatActivity {
         assert getSupportActionBar() != null;
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
 
-//        if (savedInstanceState != null) {
-//            if (movieDetailFragment==null) {
-//                movieDetailFragment = new MovieDetailActivityFragment();
-//                getSupportFragmentManager().beginTransaction()
-//                        .replace(android.R.id.content, movieDetailFragment,TAG_MOVIE_DETAIL_FRAGMENT).commit();
-//            }
-//        }
     }
 
 }

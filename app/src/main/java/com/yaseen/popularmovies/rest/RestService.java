@@ -52,7 +52,6 @@ public class RestService extends IntentService {
             Log.d(TAG,urlwithparams);
 
             URL url = new URL(urlwithparams);
-            Log.d(TAG, requestURL);
 
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
             conn.setReadTimeout(30000);

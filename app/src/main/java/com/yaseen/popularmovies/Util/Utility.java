@@ -13,6 +13,15 @@ public class Utility {
     public static final String PATH_REVIEWS="reviews";
 
     public static final String PARAM_APIKEY="api_key";
+
+
+    public static final String EXTRA_MOVIE_FRAGMENT="movie";
+    public static final String EXTRA_MOVIE = "extra_movie";
+    public static final String EXTRA_VIDEO = "extra_video";
+    public static final String EXTRA_REVIEW = "extra_review";
+
+    public static final String YOUTUBE_THUMBNAIL_URL_BASE = "http://img.youtube.com/vi/";
+    public static final String YOUTUBE_PLAYER_URL_BASE = "https://www.youtube.com/watch?v=";
     /* Constants*/
 
     /* Preference Keys*/

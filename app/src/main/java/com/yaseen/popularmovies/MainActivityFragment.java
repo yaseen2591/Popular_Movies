@@ -6,6 +6,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
+import android.database.Cursor;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Bundle;
@@ -13,6 +14,7 @@ import android.os.Parcelable;
 import android.support.v4.app.Fragment;
 import android.support.v4.content.LocalBroadcastManager;
 import android.support.v7.app.AlertDialog;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -23,9 +25,12 @@ import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.GridView;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import com.yaseen.popularmovies.Models.MovieItem;
 import com.yaseen.popularmovies.Util.Utility;
+import com.yaseen.popularmovies.adapter.MoviesAdapter;
+import com.yaseen.popularmovies.db.MovieContract;
 import com.yaseen.popularmovies.rest.RestApi;
 import com.yaseen.popularmovies.rest.RestService;
 
@@ -40,6 +45,7 @@ import java.util.List;
 
 import butterknife.Bind;
 import butterknife.ButterKnife;
+
 
 /**
  * A placeholder fragment containing a simple view.
@@ -62,9 +68,22 @@ public class MainActivityFragment extends Fragment {
     private List<MovieItem> mMoviesList;
     private MoviesAdapter mAdapter;
 
+    private boolean mTwoPane=false;
     public MainActivityFragment() {
 
     }
+    @Override
+    public void onActivityCreated(Bundle savedInstanceState) {
+        super.onActivityCreated(savedInstanceState);
+
+        if (getActivity().findViewById(R.id.mutipanwrapper)!=null){
+            mTwoPane=true;
+            Toast.makeText(getActivity(), "TwoPane", Toast.LENGTH_SHORT).show();
+            Log.d(TAG, "Large Screen twoPane true ");
+
+        }
+    }
+
 
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup container,
@@ -88,9 +107,18 @@ public class MainActivityFragment extends Fragment {
             @Override
             public void onItemClick(AdapterView<?> parent, View view, int position, long id) {
                 MovieItem selectedMovie = mAdapter.getItem(position);
-                Intent intent = new Intent(getActivity(), MovieDetailActivity.class);
-                intent.putExtra("movie", selectedMovie);
-                startActivity(intent);
+
+                if (!mTwoPane) {
+                    Intent intent = new Intent(getActivity(), MovieDetailActivity.class);
+                    intent.putExtra("movie", selectedMovie);
+                    startActivity(intent);
+                } else {
+                    Fragment fragment = new MovieDetailActivityFragment();
+                    Bundle arg = new Bundle();
+                    arg.putParcelable("movie", selectedMovie);
+                    fragment.setArguments(arg);
+                    getActivity().getSupportFragmentManager().beginTransaction().replace(R.id.movie_detail_framelayout, fragment).commit();
+                }
 
             }
         });
@@ -162,7 +190,7 @@ public class MainActivityFragment extends Fragment {
                             }
                             editor.putString(Utility.MOVIE_SORT_PREF, sortPref).apply();
                             dialog.dismiss();
-//                            mAdapter.clear();
+                            mAdapter.clear();
                             if (fetchmovies){
                                 fetchMoviesDetails();
                             }
@@ -178,7 +206,25 @@ public class MainActivityFragment extends Fragment {
     }
 
     private void loadFavorites(){
+        Cursor cursor = getContext().getContentResolver().query(MovieContract.Movie.CONTENT_URI, null, null, null, null);
+        Log.d(TAG, String.valueOf(cursor.getColumnIndex(MovieContract.Movie.COLUMN_TITLE)));
+        mMoviesList = new ArrayList<>();
+            while (cursor.moveToNext()) {
+                MovieItem resultModel = new MovieItem();
 
+                resultModel.setTitle(cursor.getString(cursor.getColumnIndex(MovieContract.Movie.COLUMN_TITLE)));
+                resultModel.setImageUrl(cursor.getString(cursor.getColumnIndex(MovieContract.Movie.COLUMN_POSTER_URL)));
+                resultModel.setBackdropImage(cursor.getString(cursor.getColumnIndex(MovieContract.Movie.COLUMN_BACK_DROP_URL)));
+                resultModel.setOverview(cursor.getString(cursor.getColumnIndex(MovieContract.Movie.COLUMN_PLOT)));
+                resultModel.setRating(cursor.getString(cursor.getColumnIndex(MovieContract.Movie.COLUMN_RATING)));
+                resultModel.setReleaseDate(cursor.getString(cursor.getColumnIndex(MovieContract.Movie.COLUMN_RELEASE_DATE)));
+                resultModel.setId(cursor.getString(cursor.getColumnIndex(MovieContract.Movie.COLUMN_MOVIE_ID)));
+
+                mMoviesList.add(resultModel);
+            }
+        mAdapter = new MoviesAdapter(getActivity(), mMoviesList);
+        mAdapter.notifyDataSetChanged();
+        moviesGridview.setAdapter(mAdapter);
     }
 
 
@@ -188,16 +234,20 @@ public class MainActivityFragment extends Fragment {
             errorButton.setVisibility(View.VISIBLE);
 
         } else {
-            progressBar.setVisibility(View.VISIBLE);
-            HashMap<String, String> params = new HashMap<>();
-            params.put(RestApi.PARAM_API_KEY, getString(R.string.moviedb_apikey));
-            String url= Utility.buildURL(new String[]{getSortByFromPreference()});
-            Intent serviceIntent = new Intent(getActivity(), RestService.class);
-            serviceIntent.putExtra(RestApi.EXTRA_ACTION, RestApi.ACTION_FETCH_MOVIES);
-            serviceIntent.putExtra(RestApi.EXTRA_PARAMS, params);
-            serviceIntent.putExtra(RestApi.EXTRA_URL,url);
+            if (!getSortByFromPreference().equals(Utility.SORT_BY_FAVORITES)){
+                progressBar.setVisibility(View.VISIBLE);
+                HashMap<String, String> params = new HashMap<>();
+                params.put(RestApi.PARAM_API_KEY, getString(R.string.moviedb_apikey));
+                String url = Utility.buildURL(new String[]{getSortByFromPreference()});
+                Intent serviceIntent = new Intent(getActivity(), RestService.class);
+                serviceIntent.putExtra(RestApi.EXTRA_ACTION, RestApi.ACTION_FETCH_MOVIES);
+                serviceIntent.putExtra(RestApi.EXTRA_PARAMS, params);
+                serviceIntent.putExtra(RestApi.EXTRA_URL, url);
+                getActivity().startService(serviceIntent);
+            }else {
+                loadFavorites();
+            }
 
-            getActivity().startService(serviceIntent);
         }
     }
 
@@ -205,9 +255,8 @@ public class MainActivityFragment extends Fragment {
     //returns sort type from preference
     private String getSortByFromPreference() {
         SharedPreferences prefs = getActivity().getSharedPreferences(Utility.MOVIE_PREFERENCE, Context.MODE_PRIVATE);
-        String sortPreference = prefs.getString(Utility.MOVIE_SORT_PREF, Utility.SORT_BY_POPULARITY);
 
-        return sortPreference;
+        return  prefs.getString(Utility.MOVIE_SORT_PREF, Utility.SORT_BY_POPULARITY);
     }
 
 

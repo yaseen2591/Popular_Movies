@@ -8,7 +8,8 @@ import butterknife.Bind;
 import butterknife.ButterKnife;
 
 public class MainActivity extends AppCompatActivity {
-    @Bind(R.id.toolbar) Toolbar toolbar;
+    private static final String TAG=MainActivity.class.getName();
+    @Bind(com.yaseen.popularmovies.R.id.toolbar) Toolbar toolbar;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -18,5 +19,7 @@ public class MainActivity extends AppCompatActivity {
         setSupportActionBar(toolbar);
         assert getSupportActionBar() != null;
         getSupportActionBar().setTitle("Movie DB");
+
     }
+
 }
