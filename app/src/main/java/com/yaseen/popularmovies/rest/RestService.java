@@ -82,6 +82,7 @@ public class RestService extends IntentService {
             e.printStackTrace();
         } catch (Exception e) {
             e.printStackTrace();
+            Log.d(TAG,e.toString());
         }
 
     }
