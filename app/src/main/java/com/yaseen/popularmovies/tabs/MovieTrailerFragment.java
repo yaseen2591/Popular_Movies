@@ -141,7 +141,7 @@ public class MovieTrailerFragment extends Fragment {
         ShareActionProvider shareActionProvider = (ShareActionProvider) MenuItemCompat.getActionProvider(menuItem);
         Intent intent = new Intent(Intent.ACTION_SEND);
         intent.setType("text/plain");
-        if (mTrailorsList!=null){
+        if (mTrailorsList!=null && mTrailorsList.size()>0){
             url = Utility.YOUTUBE_PLAYER_URL_BASE + mTrailorsList.get(0).getKey();
         }
         intent.putExtra(Intent.EXTRA_TEXT, url);
